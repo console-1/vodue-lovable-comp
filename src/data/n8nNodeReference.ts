@@ -144,7 +144,7 @@ export const EXAMPLE_WORKFLOWS = {
         name: 'Webhook',
         type: 'n8n-nodes-base.webhook',
         typeVersion: 2,
-        position: [240, 300],
+        position: [240, 300] as [number, number],
         parameters: {
           path: 'process-data',
           httpMethod: 'POST',
@@ -156,7 +156,7 @@ export const EXAMPLE_WORKFLOWS = {
         name: 'Process Data',
         type: 'n8n-nodes-base.code',
         typeVersion: 2,
-        position: [460, 300],
+        position: [460, 300] as [number, number],
         parameters: {
           mode: 'runOnceForAllItems',
           jsCode: `// Process incoming data
@@ -171,7 +171,7 @@ return $input.all();`
         name: 'Format Response',
         type: 'n8n-nodes-base.set',
         typeVersion: 3,
-        position: [680, 300],
+        position: [680, 300] as [number, number],
         parameters: {
           mode: 'manual',
           fields: {
@@ -198,7 +198,9 @@ return $input.all();`
       'Process Data': {
         main: [[{ node: 'Format Response', type: 'main', index: 0 }]]
       }
-    }
+    },
+    active: false,
+    settings: {}
   },
   API_INTEGRATION: {
     name: 'API Integration Workflow',
@@ -208,7 +210,7 @@ return $input.all();`
         name: 'Schedule',
         type: 'n8n-nodes-base.cron',
         typeVersion: 1,
-        position: [240, 300],
+        position: [240, 300] as [number, number],
         parameters: {
           triggerTimes: {
             item: [
@@ -223,7 +225,7 @@ return $input.all();`
         name: 'Fetch Data',
         type: 'n8n-nodes-base.httpRequest',
         typeVersion: 4,
-        position: [460, 300],
+        position: [460, 300] as [number, number],
         parameters: {
           method: 'GET',
           url: 'https://api.example.com/data',
@@ -244,7 +246,7 @@ return $input.all();`
         name: 'Check Response',
         type: 'n8n-nodes-base.if',
         typeVersion: 2,
-        position: [680, 300],
+        position: [680, 300] as [number, number],
         parameters: {
           conditions: {
             options: {
@@ -260,7 +262,7 @@ return $input.all();`
         name: 'Process Success',
         type: 'n8n-nodes-base.code',
         typeVersion: 2,
-        position: [900, 200],
+        position: [900, 200] as [number, number],
         parameters: {
           mode: 'runOnceForAllItems',
           jsCode: `// Process successful response
@@ -279,7 +281,7 @@ return processedData.map(data => ({ json: data }));`
         name: 'Handle Error',
         type: 'n8n-nodes-base.set',
         typeVersion: 3,
-        position: [900, 400],
+        position: [900, 400] as [number, number],
         parameters: {
           mode: 'manual',
           fields: {
@@ -312,6 +314,8 @@ return processedData.map(data => ({ json: data }));`
           [{ node: 'Handle Error', type: 'main', index: 0 }]
         ]
       }
-    }
+    },
+    active: false,
+    settings: {}
   }
 };
