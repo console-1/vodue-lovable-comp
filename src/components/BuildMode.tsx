@@ -8,13 +8,41 @@ import { Send, Sparkles, Download, Eye } from 'lucide-react';
 import { WorkflowPreview } from './WorkflowPreview';
 import { useToast } from '@/hooks/use-toast';
 
+interface WorkflowData {
+  id: number;
+  name: string;
+  description: string;
+  nodes: Array<{
+    id: string;
+    name: string;
+    type: string;
+    position: [number, number];
+  }>;
+  connections: Array<{
+    from: string;
+    to: string;
+  }>;
+  json: {
+    name: string;
+    nodes: any[];
+    connections: any;
+  };
+}
+
+interface Message {
+  type: 'user' | 'ai' | 'system';
+  content: string;
+  timestamp: Date;
+  workflow?: WorkflowData;
+}
+
 interface BuildModeProps {
   workflows: any[];
   onWorkflowCreate: (workflows: any[]) => void;
 }
 
 export const BuildMode: React.FC<BuildModeProps> = ({ workflows, onWorkflowCreate }) => {
-  const [messages, setMessages] = useState([
+  const [messages, setMessages] = useState<Message[]>([
     {
       type: 'system',
       content: 'Welcome to VODUE. Describe your workflow vision in natural language, and I\'ll craft both the n8n automation and a bespoke interface to match.',
@@ -22,13 +50,13 @@ export const BuildMode: React.FC<BuildModeProps> = ({ workflows, onWorkflowCreat
     }
   ]);
   const [input, setInput] = useState('');
-  const [currentWorkflow, setCurrentWorkflow] = useState(null);
+  const [currentWorkflow, setCurrentWorkflow] = useState<WorkflowData | null>(null);
   const { toast } = useToast();
 
   const handleSendMessage = async () => {
     if (!input.trim()) return;
 
-    const userMessage = {
+    const userMessage: Message = {
       type: 'user',
       content: input,
       timestamp: new Date()
@@ -39,19 +67,20 @@ export const BuildMode: React.FC<BuildModeProps> = ({ workflows, onWorkflowCreat
 
     // Simulate AI response with workflow generation
     setTimeout(() => {
-      const aiResponse = {
+      const workflow = generateMockWorkflow(input);
+      const aiResponse: Message = {
         type: 'ai',
         content: 'I\'ve crafted a sophisticated workflow based on your vision. The automation flows with editorial precision, each node positioned like elements in a haute couture layout.',
         timestamp: new Date(),
-        workflow: generateMockWorkflow(input)
+        workflow
       };
 
       setMessages(prev => [...prev, aiResponse]);
-      setCurrentWorkflow(aiResponse.workflow);
+      setCurrentWorkflow(workflow);
     }, 1500);
   };
 
-  const generateMockWorkflow = (description: string) => {
+  const generateMockWorkflow = (description: string): WorkflowData => {
     return {
       id: Date.now(),
       name: `Workflow: ${description.slice(0, 30)}...`,
