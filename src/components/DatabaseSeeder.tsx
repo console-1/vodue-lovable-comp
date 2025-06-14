@@ -4,7 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Database, Download, CheckCircle, AlertCircle, Rocket, Zap } from 'lucide-react';
+import { Database, Download, CheckCircle, AlertCircle } from 'lucide-react';
 import { useNodeSeeding } from '@/hooks/useNodeSeeding';
 
 export const DatabaseSeeder: React.FC = () => {
@@ -29,24 +29,23 @@ export const DatabaseSeeder: React.FC = () => {
     if (isSeeding) {
       return <Download className="w-5 h-5 text-blue-600 animate-pulse" />;
     }
-    return <Database className="w-5 h-5 text-orange-600" />;
+    return <Database className="w-5 h-5 text-blue-600" />;
   };
 
   const isCompleted = seedingProgress.includes('completed');
   const hasFailed = seedingProgress.includes('failed');
 
   return (
-    <Card className={`border-2 ${isCompleted ? 'border-green-300 bg-green-50' : hasFailed ? 'border-red-300 bg-red-50' : 'border-orange-300 bg-orange-50'}`}>
+    <Card className={`${isCompleted ? 'border-green-300 bg-green-50' : hasFailed ? 'border-red-300 bg-red-50' : 'border-blue-300 bg-blue-50'}`}>
       <CardHeader>
         <div className="flex items-center gap-2">
           {getStatusIcon()}
           <div>
-            <CardTitle className="text-lg text-orange-900 flex items-center gap-2">
-              {isCompleted ? 'Database Ready' : 'Critical Setup'}
-              {!isCompleted && <Rocket className="w-4 h-4 text-orange-600" />}
+            <CardTitle className="text-lg">
+              {isCompleted ? 'Database Ready' : 'Database Setup'}
             </CardTitle>
-            <CardDescription className="text-orange-700">
-              {isCompleted ? 'n8n intelligence system is loaded' : 'Load current n8n node definitions'}
+            <CardDescription>
+              {isCompleted ? 'n8n node definitions loaded successfully' : 'Load current n8n node definitions and templates'}
             </CardDescription>
           </div>
         </div>
@@ -56,7 +55,7 @@ export const DatabaseSeeder: React.FC = () => {
           <Alert className="border-green-300 bg-green-50">
             <CheckCircle className="w-4 h-4 text-green-600" />
             <AlertDescription className="text-green-800">
-              <strong>Success!</strong> Database seeded with modern n8n nodes. Ready for workflow generation.
+              Database seeded successfully! You can now generate workflows with current n8n nodes.
             </AlertDescription>
           </Alert>
         )}
@@ -65,7 +64,7 @@ export const DatabaseSeeder: React.FC = () => {
           <Alert className="border-red-300 bg-red-50" variant="destructive">
             <AlertCircle className="w-4 h-4" />
             <AlertDescription>
-              <strong>Seeding failed.</strong> Please check the console and try again.
+              Seeding failed. Please check the console and try again.
             </AlertDescription>
           </Alert>
         )}
@@ -73,8 +72,8 @@ export const DatabaseSeeder: React.FC = () => {
         {isSeeding && (
           <div className="space-y-2">
             <div className="flex items-center justify-between text-sm">
-              <span className="text-orange-700 font-medium">{seedingProgress}</span>
-              <span className="text-orange-600">{getProgressValue()}%</span>
+              <span className="text-blue-700 font-medium">{seedingProgress}</span>
+              <span className="text-blue-600">{getProgressValue()}%</span>
             </div>
             <Progress value={getProgressValue()} className="w-full" />
           </div>
@@ -82,20 +81,8 @@ export const DatabaseSeeder: React.FC = () => {
         
         {!isCompleted && (
           <div className="space-y-3">
-            <div className="bg-orange-100 border border-orange-200 rounded-lg p-3">
-              <div className="font-medium text-orange-900 mb-2 flex items-center gap-2">
-                <Zap className="w-4 h-4" />
-                Competition Critical Path
-              </div>
-              <div className="space-y-2 text-sm text-orange-800">
-                <p><strong>Step 1:</strong> Seed database with current n8n nodes</p>
-                <p><strong>Next:</strong> Enable intelligent workflow generation</p>
-                <p><strong>Final:</strong> Frontend code generation system</p>
-              </div>
-            </div>
-
-            <div className="space-y-2 text-sm text-orange-700">
-              <p className="font-medium">This will populate the database with:</p>
+            <div className="text-sm text-gray-700">
+              <p className="font-medium mb-2">This will populate the database with:</p>
               <ul className="list-disc list-inside space-y-1 ml-2">
                 <li>Current n8n node definitions (Code, HTTP Request, Webhook, etc.)</li>
                 <li>Node parameter schemas and validation rules</li>
@@ -109,7 +96,7 @@ export const DatabaseSeeder: React.FC = () => {
         <Button 
           onClick={seedDatabase}
           disabled={isSeeding || isCompleted}
-          className={`w-full ${isCompleted ? 'bg-green-600 hover:bg-green-700' : 'bg-orange-600 hover:bg-orange-700'}`}
+          className={`w-full ${isCompleted ? 'bg-green-600 hover:bg-green-700' : ''}`}
           size="lg"
         >
           {isSeeding ? (
@@ -120,23 +107,15 @@ export const DatabaseSeeder: React.FC = () => {
           ) : isCompleted ? (
             <>
               <CheckCircle className="w-4 h-4 mr-2" />
-              Database Ready for Competition
+              Database Ready
             </>
           ) : (
             <>
-              <Rocket className="w-4 h-4 mr-2" />
-              Execute Critical Seeding
+              <Database className="w-4 h-4 mr-2" />
+              Seed Database
             </>
           )}
         </Button>
-
-        {isCompleted && (
-          <div className="text-center pt-2">
-            <p className="text-sm text-green-700 font-medium">
-              ✅ Ready for next phase: Frontend code generation
-            </p>
-          </div>
-        )}
       </CardContent>
     </Card>
   );
