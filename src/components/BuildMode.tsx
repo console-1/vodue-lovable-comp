@@ -1,12 +1,13 @@
-
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Send, Sparkles, Download, Eye } from 'lucide-react';
+import { Send, Sparkles, Download, Eye, AlertTriangle } from 'lucide-react';
 import { WorkflowPreview } from './WorkflowPreview';
 import { useToast } from '@/hooks/use-toast';
+import { WorkflowGenerator } from '@/utils/workflowGenerator';
+import { WorkflowValidator } from '@/utils/workflowValidator';
 
 interface WorkflowData {
   id: number;
@@ -45,12 +46,13 @@ export const BuildMode: React.FC<BuildModeProps> = ({ workflows, onWorkflowCreat
   const [messages, setMessages] = useState<Message[]>([
     {
       type: 'system',
-      content: 'Welcome to VODUE. Describe your workflow vision in natural language, and I\'ll craft both the n8n automation and a bespoke interface to match.',
+      content: 'Welcome to VODUE. Describe your workflow vision in natural language, and I\'ll craft n8n automation using current node specifications and proper syntax.',
       timestamp: new Date()
     }
   ]);
   const [input, setInput] = useState('');
   const [currentWorkflow, setCurrentWorkflow] = useState<WorkflowData | null>(null);
+  const [validationResults, setValidationResults] = useState<any>(null);
   const { toast } = useToast();
 
   const handleSendMessage = async () => {
@@ -65,49 +67,62 @@ export const BuildMode: React.FC<BuildModeProps> = ({ workflows, onWorkflowCreat
     setMessages(prev => [...prev, userMessage]);
     setInput('');
 
-    // Simulate AI response with workflow generation
+    // Generate workflow using current n8n specifications
     setTimeout(() => {
-      const workflow = generateMockWorkflow(input);
-      const aiResponse: Message = {
-        type: 'ai',
-        content: 'I\'ve crafted a sophisticated workflow based on your vision. The automation flows with editorial precision, each node positioned like elements in a haute couture layout.',
-        timestamp: new Date(),
-        workflow
-      };
+      try {
+        const workflow = WorkflowGenerator.generateWorkflow(input);
+        const validation = WorkflowValidator.validateWorkflow(workflow.json);
+        
+        setValidationResults(validation);
+        
+        let responseContent = 'I\'ve crafted a sophisticated workflow using current n8n specifications. The automation flows with editorial precision, each node configured with proper syntax.';
+        
+        if (validation.warnings.length > 0) {
+          responseContent += `\n\n⚠️ Note: ${validation.warnings.length} recommendation(s) for optimal performance.`;
+        }
+        
+        if (!validation.isValid) {
+          responseContent += `\n\n❌ Validation found ${validation.errors.length} issue(s) that need attention.`;
+        }
 
-      setMessages(prev => [...prev, aiResponse]);
-      setCurrentWorkflow(workflow);
-    }, 1500);
-  };
+        const aiResponse: Message = {
+          type: 'ai',
+          content: responseContent,
+          timestamp: new Date(),
+          workflow
+        };
 
-  const generateMockWorkflow = (description: string): WorkflowData => {
-    return {
-      id: Date.now(),
-      name: `Workflow: ${description.slice(0, 30)}...`,
-      description,
-      nodes: [
-        { id: '1', name: 'Trigger', type: 'webhook', position: [100, 100] },
-        { id: '2', name: 'Process', type: 'function', position: [300, 100] },
-        { id: '3', name: 'Output', type: 'response', position: [500, 100] }
-      ],
-      connections: [
-        { from: '1', to: '2' },
-        { from: '2', to: '3' }
-      ],
-      json: {
-        name: description.slice(0, 30),
-        nodes: [],
-        connections: {}
+        setMessages(prev => [...prev, aiResponse]);
+        setCurrentWorkflow(workflow);
+      } catch (error) {
+        console.error('Workflow generation error:', error);
+        const errorResponse: Message = {
+          type: 'ai',
+          content: 'I encountered an issue generating your workflow. Please try rephrasing your request or provide more specific details.',
+          timestamp: new Date()
+        };
+        setMessages(prev => [...prev, errorResponse]);
       }
-    };
+    }, 1500);
   };
 
   const handleExportWorkflow = () => {
     if (currentWorkflow) {
-      const dataStr = JSON.stringify(currentWorkflow.json, null, 2);
+      const validation = WorkflowValidator.validateWorkflow(currentWorkflow.json);
+      let workflowToExport = currentWorkflow.json;
+      
+      if (!validation.isValid) {
+        workflowToExport = WorkflowValidator.fixDeprecatedNodes(workflowToExport);
+        toast({
+          title: "Workflow Auto-Fixed",
+          description: "Deprecated nodes were automatically updated to current specifications.",
+        });
+      }
+      
+      const dataStr = JSON.stringify(workflowToExport, null, 2);
       const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
       
-      const exportFileDefaultName = `${currentWorkflow.name}.json`;
+      const exportFileDefaultName = `${currentWorkflow.name.replace(/[^a-z0-9]/gi, '_')}.json`;
       
       const linkElement = document.createElement('a');
       linkElement.setAttribute('href', dataUri);
@@ -116,7 +131,7 @@ export const BuildMode: React.FC<BuildModeProps> = ({ workflows, onWorkflowCreat
       
       toast({
         title: "Workflow Exported",
-        description: "Your n8n workflow has been exported with editorial precision.",
+        description: "Your n8n workflow has been exported with current specifications and proper validation.",
       });
     }
   };
@@ -139,7 +154,7 @@ export const BuildMode: React.FC<BuildModeProps> = ({ workflows, onWorkflowCreat
       <div className="flex-1 flex flex-col">
         <div className="p-6 border-b border-stone-200">
           <h2 className="text-xl font-light text-stone-800 mb-2">BUILD MODE</h2>
-          <p className="text-sm text-stone-600">Craft workflows with the precision of haute couture</p>
+          <p className="text-sm text-stone-600">Craft workflows with current n8n specifications</p>
         </div>
 
         <ScrollArea className="flex-1 p-6">
@@ -160,25 +175,43 @@ export const BuildMode: React.FC<BuildModeProps> = ({ workflows, onWorkflowCreat
                       </div>
                     )}
                     <div className="flex-1">
-                      <p className="leading-relaxed">{message.content}</p>
+                      <p className="leading-relaxed whitespace-pre-line">{message.content}</p>
                       {message.workflow && (
-                        <div className="mt-4 flex space-x-2">
-                          <Button
-                            size="sm"
-                            onClick={handleExportWorkflow}
-                            className="bg-stone-700 hover:bg-stone-800"
-                          >
-                            <Download className="w-4 h-4 mr-2" />
-                            Export JSON
-                          </Button>
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={handleDeployWorkflow}
-                          >
-                            <Eye className="w-4 h-4 mr-2" />
-                            Deploy Live
-                          </Button>
+                        <div className="mt-4 space-y-3">
+                          {validationResults && (
+                            <div className="space-y-2">
+                              {validationResults.warnings.length > 0 && (
+                                <div className="flex items-center space-x-2 text-amber-600 text-sm">
+                                  <AlertTriangle className="w-4 h-4" />
+                                  <span>{validationResults.warnings.length} optimization suggestions</span>
+                                </div>
+                              )}
+                              {!validationResults.isValid && (
+                                <div className="flex items-center space-x-2 text-red-600 text-sm">
+                                  <AlertTriangle className="w-4 h-4" />
+                                  <span>{validationResults.errors.length} validation errors</span>
+                                </div>
+                              )}
+                            </div>
+                          )}
+                          <div className="flex space-x-2">
+                            <Button
+                              size="sm"
+                              onClick={handleExportWorkflow}
+                              className="bg-stone-700 hover:bg-stone-800"
+                            >
+                              <Download className="w-4 h-4 mr-2" />
+                              Export JSON
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={handleDeployWorkflow}
+                            >
+                              <Eye className="w-4 h-4 mr-2" />
+                              Deploy Live
+                            </Button>
+                          </div>
                         </div>
                       )}
                     </div>
@@ -211,7 +244,7 @@ export const BuildMode: React.FC<BuildModeProps> = ({ workflows, onWorkflowCreat
       {/* Workflow Preview */}
       {currentWorkflow && (
         <div className="w-96 border-l border-stone-200">
-          <WorkflowPreview workflow={currentWorkflow} />
+          <WorkflowPreview workflow={currentWorkflow} validationResults={validationResults} />
         </div>
       )}
     </div>
