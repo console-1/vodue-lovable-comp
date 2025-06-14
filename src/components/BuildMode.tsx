@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { ChatInterface } from './ChatInterface';
 import { WorkflowPreview } from './WorkflowPreview';
@@ -75,12 +74,14 @@ export const BuildMode: React.FC<BuildModeProps> = ({ workflows, onWorkflowCreat
       
       let responseContent = 'I\'ve crafted a sophisticated workflow using current n8n specifications. The automation flows with editorial precision, each node configured with proper syntax.';
       
-      if (validation.warnings && validation.warnings.length > 0) {
-        responseContent += `\n\n⚠️ Note: ${validation.warnings.length} recommendation(s) for optimal performance.`;
+      const warningCount = validation.issues?.filter(issue => issue.type === 'warning').length || 0;
+      if (warningCount > 0) {
+        responseContent += `\n\n⚠️ Note: ${warningCount} recommendation(s) for optimal performance.`;
       }
       
       if (!validation.isValid) {
-        responseContent += `\n\n❌ Validation found ${validation.issues?.filter(i => i.type === 'error').length || 0} issue(s) that need attention.`;
+        const errorCount = validation.issues?.filter(i => i.type === 'error').length || 0;
+        responseContent += `\n\n❌ Validation found ${errorCount} issue(s) that need attention.`;
       }
 
       const aiResponse: Message = {
