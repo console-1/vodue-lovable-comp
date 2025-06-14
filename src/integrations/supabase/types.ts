@@ -89,6 +89,98 @@ export type Database = {
           },
         ]
       }
+      node_definitions: {
+        Row: {
+          category: string | null
+          created_at: string
+          deprecated: boolean
+          description: string | null
+          display_name: string
+          example_config: Json | null
+          icon: string | null
+          id: string
+          node_type: string
+          parameters_schema: Json | null
+          replaced_by: string | null
+          updated_at: string
+          version: string | null
+        }
+        Insert: {
+          category?: string | null
+          created_at?: string
+          deprecated?: boolean
+          description?: string | null
+          display_name: string
+          example_config?: Json | null
+          icon?: string | null
+          id?: string
+          node_type: string
+          parameters_schema?: Json | null
+          replaced_by?: string | null
+          updated_at?: string
+          version?: string | null
+        }
+        Update: {
+          category?: string | null
+          created_at?: string
+          deprecated?: boolean
+          description?: string | null
+          display_name?: string
+          example_config?: Json | null
+          icon?: string | null
+          id?: string
+          node_type?: string
+          parameters_schema?: Json | null
+          replaced_by?: string | null
+          updated_at?: string
+          version?: string | null
+        }
+        Relationships: []
+      }
+      node_parameters: {
+        Row: {
+          default_value: string | null
+          description: string | null
+          id: string
+          node_definition_id: string
+          options: Json | null
+          parameter_name: string
+          parameter_type: string
+          required: boolean
+          validation_rules: Json | null
+        }
+        Insert: {
+          default_value?: string | null
+          description?: string | null
+          id?: string
+          node_definition_id: string
+          options?: Json | null
+          parameter_name: string
+          parameter_type: string
+          required?: boolean
+          validation_rules?: Json | null
+        }
+        Update: {
+          default_value?: string | null
+          description?: string | null
+          id?: string
+          node_definition_id?: string
+          options?: Json | null
+          parameter_name?: string
+          parameter_type?: string
+          required?: boolean
+          validation_rules?: Json | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "node_parameters_node_definition_id_fkey"
+            columns: ["node_definition_id"]
+            isOneToOne: false
+            referencedRelation: "node_definitions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -157,6 +249,59 @@ export type Database = {
             columns: ["workflow_id"]
             isOneToOne: false
             referencedRelation: "workflows"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      workflow_templates: {
+        Row: {
+          category: string | null
+          created_at: string
+          description: string | null
+          difficulty: string | null
+          id: string
+          is_public: boolean
+          n8n_workflow: Json | null
+          name: string
+          tags: string[] | null
+          usage_count: number
+          use_case: string | null
+          user_id: string
+        }
+        Insert: {
+          category?: string | null
+          created_at?: string
+          description?: string | null
+          difficulty?: string | null
+          id?: string
+          is_public?: boolean
+          n8n_workflow?: Json | null
+          name: string
+          tags?: string[] | null
+          usage_count?: number
+          use_case?: string | null
+          user_id: string
+        }
+        Update: {
+          category?: string | null
+          created_at?: string
+          description?: string | null
+          difficulty?: string | null
+          id?: string
+          is_public?: boolean
+          n8n_workflow?: Json | null
+          name?: string
+          tags?: string[] | null
+          usage_count?: number
+          use_case?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "workflow_templates_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
         ]
