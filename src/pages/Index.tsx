@@ -8,10 +8,16 @@ import { BuildMode } from '@/components/BuildMode';
 import { InteractMode } from '@/components/InteractMode';
 import { DatabaseSeeder } from '@/components/DatabaseSeeder';
 import { useAuth } from '@/contexts/AuthContext';
+import { useWorkflows } from '@/hooks/useWorkflows';
 import { Database, Zap, Brain, Sparkles, Rocket, CheckCircle } from 'lucide-react';
 
 export default function Index() {
   const { user } = useAuth();
+  const { data: workflows = [], isLoading, refetch } = useWorkflows();
+
+  const handleWorkflowCreate = () => {
+    refetch();
+  };
 
   if (!user) {
     return (
@@ -165,11 +171,11 @@ export default function Index() {
               </TabsList>
               
               <TabsContent value="build" className="space-y-4">
-                <BuildMode />
+                <BuildMode workflows={workflows} onWorkflowCreate={handleWorkflowCreate} />
               </TabsContent>
               
               <TabsContent value="interact" className="space-y-4">
-                <InteractMode />
+                <InteractMode workflows={workflows} />
               </TabsContent>
             </Tabs>
           </CardContent>
