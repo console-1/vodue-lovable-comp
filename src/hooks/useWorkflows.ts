@@ -16,6 +16,17 @@ interface Workflow {
   created_at: string;
 }
 
+interface CreateWorkflowInput {
+  name: string;
+  description?: string;
+  n8n_json?: any;
+  frontend_code?: string;
+  webhook_url?: string;
+  status?: 'draft' | 'deployed' | 'active';
+  is_public?: boolean;
+  conversation_id?: string;
+}
+
 export const useWorkflows = () => {
   const [workflows, setWorkflows] = useState<Workflow[]>([]);
   const [loading, setLoading] = useState(true);
@@ -49,14 +60,21 @@ export const useWorkflows = () => {
     }
   };
 
-  const createWorkflow = async (workflow: Partial<Workflow>) => {
+  const createWorkflow = async (workflow: CreateWorkflowInput) => {
     if (!user) return null;
 
     try {
       const { data, error } = await supabase
         .from('workflows')
         .insert({
-          ...workflow,
+          name: workflow.name,
+          description: workflow.description,
+          n8n_json: workflow.n8n_json,
+          frontend_code: workflow.frontend_code,
+          webhook_url: workflow.webhook_url,
+          status: workflow.status || 'draft',
+          is_public: workflow.is_public || false,
+          conversation_id: workflow.conversation_id,
           user_id: user.id,
         })
         .select()
@@ -80,7 +98,7 @@ export const useWorkflows = () => {
     }
   };
 
-  const updateWorkflow = async (id: string, updates: Partial<Workflow>) => {
+  const updateWorkflow = async (id: string, updates: Partial<CreateWorkflowInput>) => {
     try {
       const { error } = await supabase
         .from('workflows')
