@@ -1,4 +1,3 @@
-
 import { N8N_NODE_TYPES, EXAMPLE_WORKFLOWS, type N8nWorkflow, type N8nNode } from '@/data/n8nNodeReference';
 import { WorkflowValidator } from './workflowValidator';
 
@@ -252,7 +251,12 @@ export class WorkflowGenerator {
   }
 
   private static generateBasicWorkflow(description: string): N8nWorkflow {
-    return EXAMPLE_WORKFLOWS.SIMPLE_DATA_PROCESSING as N8nWorkflow;
+    const basicWorkflow = EXAMPLE_WORKFLOWS.SIMPLE_DATA_PROCESSING;
+    return {
+      ...basicWorkflow,
+      active: false,
+      settings: {}
+    };
   }
 
   private static generateConnections(nodes: N8nNode[]): Record<string, any> {
