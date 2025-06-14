@@ -11,6 +11,9 @@ interface WorkflowPreviewProps {
 }
 
 export const WorkflowPreview: React.FC<WorkflowPreviewProps> = ({ workflow, validationResults }) => {
+  const errors = validationResults?.issues?.filter((issue: any) => issue.type === 'error') || [];
+  const warnings = validationResults?.issues?.filter((issue: any) => issue.type === 'warning') || [];
+
   return (
     <div className="h-full flex flex-col">
       <div className="p-6 border-b border-stone-200">
@@ -25,7 +28,7 @@ export const WorkflowPreview: React.FC<WorkflowPreviewProps> = ({ workflow, vali
             <p className="text-sm text-stone-600 mb-3">{workflow.description}</p>
             <div className="flex items-center space-x-2">
               <Badge variant="outline" className="text-xs">
-                {workflow.nodes.length} nodes
+                {workflow.nodes?.length || 0} nodes
               </Badge>
               {validationResults?.isValid && (
                 <Badge variant="outline" className="text-xs text-green-600 border-green-300">
@@ -43,15 +46,15 @@ export const WorkflowPreview: React.FC<WorkflowPreviewProps> = ({ workflow, vali
                 Validation Status
               </h5>
               
-              {validationResults.errors.length > 0 && (
+              {errors.length > 0 && (
                 <Card className="p-3 bg-red-50 border-red-200">
                   <div className="flex items-center space-x-2 mb-2">
                     <AlertTriangle className="w-4 h-4 text-red-600" />
                     <span className="text-sm font-medium text-red-800">
-                      {validationResults.errors.length} Error(s)
+                      {errors.length} Error(s)
                     </span>
                   </div>
-                  {validationResults.errors.slice(0, 3).map((error: any, index: number) => (
+                  {errors.slice(0, 3).map((error: any, index: number) => (
                     <p key={index} className="text-xs text-red-700 mb-1">
                       {error.message}
                     </p>
@@ -59,15 +62,15 @@ export const WorkflowPreview: React.FC<WorkflowPreviewProps> = ({ workflow, vali
                 </Card>
               )}
 
-              {validationResults.warnings.length > 0 && (
+              {warnings.length > 0 && (
                 <Card className="p-3 bg-amber-50 border-amber-200">
                   <div className="flex items-center space-x-2 mb-2">
                     <Info className="w-4 h-4 text-amber-600" />
                     <span className="text-sm font-medium text-amber-800">
-                      {validationResults.warnings.length} Suggestion(s)
+                      {warnings.length} Suggestion(s)
                     </span>
                   </div>
-                  {validationResults.warnings.slice(0, 3).map((warning: any, index: number) => (
+                  {warnings.slice(0, 3).map((warning: any, index: number) => (
                     <p key={index} className="text-xs text-amber-700 mb-1">
                       {warning.message}
                     </p>
@@ -75,7 +78,7 @@ export const WorkflowPreview: React.FC<WorkflowPreviewProps> = ({ workflow, vali
                 </Card>
               )}
 
-              {validationResults.isValid && validationResults.warnings.length === 0 && (
+              {validationResults.isValid && warnings.length === 0 && (
                 <Card className="p-3 bg-green-50 border-green-200">
                   <div className="flex items-center space-x-2">
                     <CheckCircle className="w-4 h-4 text-green-600" />
@@ -93,7 +96,7 @@ export const WorkflowPreview: React.FC<WorkflowPreviewProps> = ({ workflow, vali
               Flow Structure
             </h5>
             
-            {workflow.nodes.map((node: any, index: number) => (
+            {workflow.nodes?.map((node: any, index: number) => (
               <div key={node.id} className="relative">
                 <Card className="p-3 bg-white hover:bg-stone-50 transition-colors">
                   <div className="flex items-center space-x-3">
@@ -105,7 +108,7 @@ export const WorkflowPreview: React.FC<WorkflowPreviewProps> = ({ workflow, vali
                   </div>
                 </Card>
                 
-                {index < workflow.nodes.length - 1 && (
+                {index < (workflow.nodes?.length || 0) - 1 && (
                   <div className="flex justify-center py-2">
                     <div className="w-px h-4 bg-stone-300"></div>
                   </div>
