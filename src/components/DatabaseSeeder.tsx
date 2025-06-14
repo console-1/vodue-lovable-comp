@@ -3,7 +3,6 @@ import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
-import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Database, Download, CheckCircle, AlertCircle } from 'lucide-react';
 import { useNodeSeeding } from '@/hooks/useNodeSeeding';
 
@@ -21,87 +20,69 @@ export const DatabaseSeeder: React.FC = () => {
 
   const getStatusIcon = () => {
     if (seedingProgress.includes('completed')) {
-      return <CheckCircle className="w-4 h-4 text-green-600" />;
+      return <CheckCircle className="w-5 h-5 text-green-600" />;
     }
     if (seedingProgress.includes('failed')) {
-      return <AlertCircle className="w-4 h-4 text-red-600" />;
+      return <AlertCircle className="w-5 h-5 text-red-600" />;
     }
     if (isSeeding) {
-      return <Download className="w-4 h-4 text-blue-600 animate-pulse" />;
+      return <Download className="w-5 h-5 text-blue-600 animate-pulse" />;
     }
-    return <Database className="w-4 h-4 text-gray-600" />;
+    return <Database className="w-5 h-5 text-gray-600" />;
   };
 
-  const isCompleted = seedingProgress.includes('completed');
-  const hasFailed = seedingProgress.includes('failed');
-
   return (
-    <Card className="h-fit">
-      <CardHeader className="pb-3">
+    <Card className="border-orange-200 bg-orange-50/50">
+      <CardHeader>
         <div className="flex items-center gap-2">
           {getStatusIcon()}
-          <div>
-            <CardTitle className="text-sm font-medium text-gray-800">
-              {isCompleted ? 'Database Ready' : 'Node Database'}
-            </CardTitle>
-            <CardDescription className="text-xs">
-              {isCompleted ? 'Ready to build' : 'Load n8n definitions'}
-            </CardDescription>
-          </div>
+          <CardTitle className="text-lg text-orange-900">Database Seeding</CardTitle>
         </div>
+        <CardDescription className="text-orange-700">
+          Load current n8n node definitions and workflow templates into the database
+        </CardDescription>
       </CardHeader>
-      <CardContent className="pt-0 space-y-3">
-        {isCompleted && (
-          <Alert className="border-green-300 bg-green-50 py-2">
-            <CheckCircle className="w-3 h-3 text-green-600" />
-            <AlertDescription className="text-xs text-green-800">
-              Ready for workflow generation
-            </AlertDescription>
-          </Alert>
-        )}
-
-        {hasFailed && (
-          <Alert className="border-red-300 bg-red-50 py-2" variant="destructive">
-            <AlertCircle className="w-3 h-3" />
-            <AlertDescription className="text-xs">
-              Seeding failed. Try again.
-            </AlertDescription>
-          </Alert>
-        )}
-
+      <CardContent className="space-y-4">
         {isSeeding && (
           <div className="space-y-2">
-            <div className="text-xs text-blue-700 font-medium">{seedingProgress}</div>
-            <Progress value={getProgressValue()} className="w-full h-2" />
+            <div className="flex items-center justify-between text-sm">
+              <span className="text-orange-700">{seedingProgress}</span>
+              <span className="text-orange-600">{getProgressValue()}%</span>
+            </div>
+            <Progress value={getProgressValue()} className="w-full" />
           </div>
         )}
         
-        {!isCompleted && !isSeeding && (
-          <div className="text-xs text-gray-600">
-            <p className="mb-2">Loads current n8n nodes and templates for accurate workflow generation.</p>
-          </div>
-        )}
+        <div className="space-y-2 text-sm text-orange-700">
+          <p>This will populate the database with:</p>
+          <ul className="list-disc list-inside space-y-1 ml-2">
+            <li>Current n8n node definitions (Webhook, Code, HTTP Request, etc.)</li>
+            <li>Node parameter schemas and validation rules</li>
+            <li>Example workflow templates</li>
+            <li>Deprecated node mappings for migration assistance</li>
+          </ul>
+        </div>
 
         <Button 
           onClick={seedDatabase}
-          disabled={isSeeding || isCompleted}
-          className={`w-full text-xs ${isCompleted ? 'bg-green-600 hover:bg-green-700' : 'bg-gray-800 hover:bg-gray-900'}`}
-          size="sm"
+          disabled={isSeeding}
+          className="w-full"
+          variant={seedingProgress.includes('completed') ? 'secondary' : 'default'}
         >
           {isSeeding ? (
             <>
-              <Download className="w-3 h-3 mr-2 animate-pulse" />
-              Seeding...
+              <Download className="w-4 h-4 mr-2 animate-pulse" />
+              Seeding Database...
             </>
-          ) : isCompleted ? (
+          ) : seedingProgress.includes('completed') ? (
             <>
-              <CheckCircle className="w-3 h-3 mr-2" />
-              Ready
+              <CheckCircle className="w-4 h-4 mr-2" />
+              Database Seeded Successfully
             </>
           ) : (
             <>
-              <Database className="w-3 h-3 mr-2" />
-              Seed Database
+              <Database className="w-4 h-4 mr-2" />
+              Seed Database with n8n Nodes
             </>
           )}
         </Button>
