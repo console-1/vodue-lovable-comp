@@ -9,7 +9,215 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      conversations: {
+        Row: {
+          created_at: string
+          id: string
+          mode: Database["public"]["Enums"]["conversation_mode"]
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          mode: Database["public"]["Enums"]["conversation_mode"]
+          title: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          mode?: Database["public"]["Enums"]["conversation_mode"]
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "conversations_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      messages: {
+        Row: {
+          content: string
+          conversation_id: string
+          id: string
+          metadata: Json | null
+          role: Database["public"]["Enums"]["message_role"]
+          timestamp: string
+          user_id: string
+        }
+        Insert: {
+          content: string
+          conversation_id: string
+          id?: string
+          metadata?: Json | null
+          role: Database["public"]["Enums"]["message_role"]
+          timestamp?: string
+          user_id: string
+        }
+        Update: {
+          content?: string
+          conversation_id?: string
+          id?: string
+          metadata?: Json | null
+          role?: Database["public"]["Enums"]["message_role"]
+          timestamp?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "messages_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "conversations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "messages_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          created_at: string
+          display_name: string | null
+          id: string
+          subscription_tier: Database["public"]["Enums"]["subscription_tier"]
+        }
+        Insert: {
+          avatar_url?: string | null
+          created_at?: string
+          display_name?: string | null
+          id: string
+          subscription_tier?: Database["public"]["Enums"]["subscription_tier"]
+        }
+        Update: {
+          avatar_url?: string | null
+          created_at?: string
+          display_name?: string | null
+          id?: string
+          subscription_tier?: Database["public"]["Enums"]["subscription_tier"]
+        }
+        Relationships: []
+      }
+      workflow_interactions: {
+        Row: {
+          execution_time_ms: number | null
+          id: string
+          input_data: Json | null
+          output_data: Json | null
+          status: Database["public"]["Enums"]["interaction_status"]
+          timestamp: string
+          user_id: string
+          workflow_id: string
+        }
+        Insert: {
+          execution_time_ms?: number | null
+          id?: string
+          input_data?: Json | null
+          output_data?: Json | null
+          status: Database["public"]["Enums"]["interaction_status"]
+          timestamp?: string
+          user_id: string
+          workflow_id: string
+        }
+        Update: {
+          execution_time_ms?: number | null
+          id?: string
+          input_data?: Json | null
+          output_data?: Json | null
+          status?: Database["public"]["Enums"]["interaction_status"]
+          timestamp?: string
+          user_id?: string
+          workflow_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "workflow_interactions_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "workflow_interactions_workflow_id_fkey"
+            columns: ["workflow_id"]
+            isOneToOne: false
+            referencedRelation: "workflows"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      workflows: {
+        Row: {
+          conversation_id: string | null
+          created_at: string
+          description: string | null
+          frontend_code: string | null
+          id: string
+          is_public: boolean
+          n8n_json: Json | null
+          name: string
+          status: Database["public"]["Enums"]["workflow_status"]
+          user_id: string
+          webhook_url: string | null
+        }
+        Insert: {
+          conversation_id?: string | null
+          created_at?: string
+          description?: string | null
+          frontend_code?: string | null
+          id?: string
+          is_public?: boolean
+          n8n_json?: Json | null
+          name: string
+          status?: Database["public"]["Enums"]["workflow_status"]
+          user_id: string
+          webhook_url?: string | null
+        }
+        Update: {
+          conversation_id?: string | null
+          created_at?: string
+          description?: string | null
+          frontend_code?: string | null
+          id?: string
+          is_public?: boolean
+          n8n_json?: Json | null
+          name?: string
+          status?: Database["public"]["Enums"]["workflow_status"]
+          user_id?: string
+          webhook_url?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "workflows_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "conversations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "workflows_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
@@ -18,7 +226,11 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      [_ in never]: never
+      conversation_mode: "build" | "interact"
+      interaction_status: "success" | "error"
+      message_role: "user" | "assistant"
+      subscription_tier: "free" | "pro"
+      workflow_status: "draft" | "deployed" | "active"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -133,6 +345,12 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      conversation_mode: ["build", "interact"],
+      interaction_status: ["success", "error"],
+      message_role: ["user", "assistant"],
+      subscription_tier: ["free", "pro"],
+      workflow_status: ["draft", "deployed", "active"],
+    },
   },
 } as const
