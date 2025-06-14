@@ -1,9 +1,6 @@
+
 import React, { useState } from 'react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Card } from '@/components/ui/card';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import { Send, Sparkles, Download, Eye, AlertTriangle } from 'lucide-react';
+import { ChatInterface } from './ChatInterface';
 import { WorkflowPreview } from './WorkflowPreview';
 import { useToast } from '@/hooks/use-toast';
 import { WorkflowGenerator } from '@/utils/workflowGenerator';
@@ -150,98 +147,16 @@ export const BuildMode: React.FC<BuildModeProps> = ({ workflows, onWorkflowCreat
 
   return (
     <div className="flex-1 flex">
-      {/* Chat Interface */}
-      <div className="flex-1 flex flex-col">
-        <div className="p-6 border-b border-stone-200">
-          <h2 className="text-xl font-light text-stone-800 mb-2">BUILD MODE</h2>
-          <p className="text-sm text-stone-600">Craft workflows with current n8n specifications</p>
-        </div>
+      <ChatInterface
+        messages={messages}
+        input={input}
+        validationResults={validationResults}
+        onInputChange={setInput}
+        onSendMessage={handleSendMessage}
+        onExportWorkflow={handleExportWorkflow}
+        onDeployWorkflow={handleDeployWorkflow}
+      />
 
-        <ScrollArea className="flex-1 p-6">
-          <div className="space-y-6 max-w-4xl">
-            {messages.map((message, index) => (
-              <div key={index} className={`flex ${message.type === 'user' ? 'justify-end' : 'justify-start'}`}>
-                <Card className={`max-w-2xl p-6 ${
-                  message.type === 'user' 
-                    ? 'bg-stone-800 text-white' 
-                    : message.type === 'system'
-                    ? 'bg-gradient-to-r from-stone-100 to-stone-50 border-stone-300'
-                    : 'bg-white border-stone-200'
-                }`}>
-                  <div className="flex items-start space-x-3">
-                    {message.type !== 'user' && (
-                      <div className="w-6 h-6 bg-gradient-to-br from-stone-800 to-stone-600 rounded-full flex items-center justify-center flex-shrink-0 mt-1">
-                        <Sparkles className="w-3 h-3 text-white" />
-                      </div>
-                    )}
-                    <div className="flex-1">
-                      <p className="leading-relaxed whitespace-pre-line">{message.content}</p>
-                      {message.workflow && (
-                        <div className="mt-4 space-y-3">
-                          {validationResults && (
-                            <div className="space-y-2">
-                              {validationResults.warnings.length > 0 && (
-                                <div className="flex items-center space-x-2 text-amber-600 text-sm">
-                                  <AlertTriangle className="w-4 h-4" />
-                                  <span>{validationResults.warnings.length} optimization suggestions</span>
-                                </div>
-                              )}
-                              {!validationResults.isValid && (
-                                <div className="flex items-center space-x-2 text-red-600 text-sm">
-                                  <AlertTriangle className="w-4 h-4" />
-                                  <span>{validationResults.errors.length} validation errors</span>
-                                </div>
-                              )}
-                            </div>
-                          )}
-                          <div className="flex space-x-2">
-                            <Button
-                              size="sm"
-                              onClick={handleExportWorkflow}
-                              className="bg-stone-700 hover:bg-stone-800"
-                            >
-                              <Download className="w-4 h-4 mr-2" />
-                              Export JSON
-                            </Button>
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              onClick={handleDeployWorkflow}
-                            >
-                              <Eye className="w-4 h-4 mr-2" />
-                              Deploy Live
-                            </Button>
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                </Card>
-              </div>
-            ))}
-          </div>
-        </ScrollArea>
-
-        <div className="p-6 border-t border-stone-200">
-          <div className="flex space-x-3">
-            <Input
-              placeholder="Describe your workflow vision..."
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
-              className="flex-1 border-stone-300 focus:border-stone-500"
-            />
-            <Button 
-              onClick={handleSendMessage}
-              className="bg-stone-800 hover:bg-stone-900"
-            >
-              <Send className="w-4 h-4" />
-            </Button>
-          </div>
-        </div>
-      </div>
-
-      {/* Workflow Preview */}
       {currentWorkflow && (
         <div className="w-96 border-l border-stone-200">
           <WorkflowPreview workflow={currentWorkflow} validationResults={validationResults} />
