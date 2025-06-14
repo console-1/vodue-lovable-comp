@@ -23,10 +23,10 @@ export default function Index() {
       <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center p-4">
         <Card className="w-full max-w-md">
           <CardHeader className="text-center">
-            <div className="mx-auto mb-4 w-12 h-12 bg-gradient-to-r from-purple-500 to-pink-500 rounded-lg flex items-center justify-center">
+            <div className="mx-auto mb-4 w-12 h-12 bg-gray-800 rounded-lg flex items-center justify-center">
               <Sparkles className="w-6 h-6 text-white" />
             </div>
-            <CardTitle className="text-2xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
+            <CardTitle className="text-2xl font-light text-gray-800">
               VODUE
             </CardTitle>
             <CardDescription>
@@ -51,44 +51,56 @@ export default function Index() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
       <div className="max-w-7xl mx-auto p-6">
-        {/* Database Setup Section */}
-        <div className="mb-6">
-          <DatabaseSeeder />
-        </div>
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+          {/* Sidebar with Database Seeder */}
+          <div className="lg:col-span-1">
+            <DatabaseSeeder />
+          </div>
 
-        {/* Main Interface */}
-        <Card className="border-gray-200">
-          <CardHeader>
-            <CardTitle className="text-2xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
-              VODUE - Vogue Developer Tools
-            </CardTitle>
-            <CardDescription>
-              Sophisticated vibe-coding interface for n8n workflow creation and interaction
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Tabs defaultValue="build" className="w-full">
-              <TabsList className="grid w-full grid-cols-2 mb-6">
-                <TabsTrigger value="build" className="flex items-center gap-2">
-                  <Brain className="w-4 h-4" />
-                  Build Mode
-                </TabsTrigger>
-                <TabsTrigger value="interact" className="flex items-center gap-2">
-                  <Zap className="w-4 h-4" />
-                  Interact Mode
-                </TabsTrigger>
-              </TabsList>
-              
-              <TabsContent value="build" className="space-y-4">
-                <BuildMode workflows={workflows} onWorkflowCreate={handleWorkflowCreate} />
-              </TabsContent>
-              
-              <TabsContent value="interact" className="space-y-4">
-                <InteractMode workflows={workflows} />
-              </TabsContent>
-            </Tabs>
-          </CardContent>
-        </Card>
+          {/* Main Interface */}
+          <div className="lg:col-span-3">
+            <Card className="border-gray-200">
+              <CardHeader>
+                <div className="flex items-center gap-3 mb-2">
+                  <div className="w-8 h-8 bg-gray-800 rounded-lg flex items-center justify-center">
+                    <Sparkles className="w-4 h-4 text-white" />
+                  </div>
+                  <CardTitle className="text-2xl font-light text-gray-800">
+                    VODUE
+                  </CardTitle>
+                  <span className="text-xs uppercase tracking-widest text-gray-500 font-medium">
+                    Vogue Developer Tools
+                  </span>
+                </div>
+                <CardDescription>
+                  Sophisticated vibe-coding interface for n8n workflow creation and interaction
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <Tabs defaultValue="build" className="w-full">
+                  <TabsList className="grid w-full grid-cols-2 mb-6">
+                    <TabsTrigger value="build" className="flex items-center gap-2">
+                      <Brain className="w-4 h-4" />
+                      Build Mode
+                    </TabsTrigger>
+                    <TabsTrigger value="interact" className="flex items-center gap-2">
+                      <Zap className="w-4 h-4" />
+                      Interact Mode
+                    </TabsTrigger>
+                  </TabsList>
+                  
+                  <TabsContent value="build" className="space-y-4">
+                    <BuildMode workflows={workflows} onWorkflowCreate={handleWorkflowCreate} />
+                  </TabsContent>
+                  
+                  <TabsContent value="interact" className="space-y-4">
+                    <InteractMode workflows={workflows} />
+                  </TabsContent>
+                </Tabs>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
       </div>
     </div>
   );

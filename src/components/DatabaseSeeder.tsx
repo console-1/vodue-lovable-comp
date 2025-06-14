@@ -21,97 +21,86 @@ export const DatabaseSeeder: React.FC = () => {
 
   const getStatusIcon = () => {
     if (seedingProgress.includes('completed')) {
-      return <CheckCircle className="w-5 h-5 text-green-600" />;
+      return <CheckCircle className="w-4 h-4 text-green-600" />;
     }
     if (seedingProgress.includes('failed')) {
-      return <AlertCircle className="w-5 h-5 text-red-600" />;
+      return <AlertCircle className="w-4 h-4 text-red-600" />;
     }
     if (isSeeding) {
-      return <Download className="w-5 h-5 text-blue-600 animate-pulse" />;
+      return <Download className="w-4 h-4 text-blue-600 animate-pulse" />;
     }
-    return <Database className="w-5 h-5 text-blue-600" />;
+    return <Database className="w-4 h-4 text-gray-600" />;
   };
 
   const isCompleted = seedingProgress.includes('completed');
   const hasFailed = seedingProgress.includes('failed');
 
   return (
-    <Card className={`${isCompleted ? 'border-green-300 bg-green-50' : hasFailed ? 'border-red-300 bg-red-50' : 'border-blue-300 bg-blue-50'}`}>
-      <CardHeader>
+    <Card className="h-fit">
+      <CardHeader className="pb-3">
         <div className="flex items-center gap-2">
           {getStatusIcon()}
           <div>
-            <CardTitle className="text-lg">
-              {isCompleted ? 'Database Ready' : 'Database Setup'}
+            <CardTitle className="text-sm font-medium text-gray-800">
+              {isCompleted ? 'Database Ready' : 'Node Database'}
             </CardTitle>
-            <CardDescription>
-              {isCompleted ? 'n8n node definitions loaded successfully' : 'Load current n8n node definitions and templates'}
+            <CardDescription className="text-xs">
+              {isCompleted ? 'Ready to build' : 'Load n8n definitions'}
             </CardDescription>
           </div>
         </div>
       </CardHeader>
-      <CardContent className="space-y-4">
+      <CardContent className="pt-0 space-y-3">
         {isCompleted && (
-          <Alert className="border-green-300 bg-green-50">
-            <CheckCircle className="w-4 h-4 text-green-600" />
-            <AlertDescription className="text-green-800">
-              Database seeded successfully! You can now generate workflows with current n8n nodes.
+          <Alert className="border-green-300 bg-green-50 py-2">
+            <CheckCircle className="w-3 h-3 text-green-600" />
+            <AlertDescription className="text-xs text-green-800">
+              Ready for workflow generation
             </AlertDescription>
           </Alert>
         )}
 
         {hasFailed && (
-          <Alert className="border-red-300 bg-red-50" variant="destructive">
-            <AlertCircle className="w-4 h-4" />
-            <AlertDescription>
-              Seeding failed. Please check the console and try again.
+          <Alert className="border-red-300 bg-red-50 py-2" variant="destructive">
+            <AlertCircle className="w-3 h-3" />
+            <AlertDescription className="text-xs">
+              Seeding failed. Try again.
             </AlertDescription>
           </Alert>
         )}
 
         {isSeeding && (
           <div className="space-y-2">
-            <div className="flex items-center justify-between text-sm">
-              <span className="text-blue-700 font-medium">{seedingProgress}</span>
-              <span className="text-blue-600">{getProgressValue()}%</span>
-            </div>
-            <Progress value={getProgressValue()} className="w-full" />
+            <div className="text-xs text-blue-700 font-medium">{seedingProgress}</div>
+            <Progress value={getProgressValue()} className="w-full h-2" />
           </div>
         )}
         
-        {!isCompleted && (
-          <div className="space-y-3">
-            <div className="text-sm text-gray-700">
-              <p className="font-medium mb-2">This will populate the database with:</p>
-              <ul className="list-disc list-inside space-y-1 ml-2">
-                <li>Current n8n node definitions (Code, HTTP Request, Webhook, etc.)</li>
-                <li>Node parameter schemas and validation rules</li>
-                <li>Example workflow templates</li>
-                <li>Deprecated node mappings for migration assistance</li>
-              </ul>
-            </div>
+        {!isCompleted && !isSeeding && (
+          <div className="text-xs text-gray-600">
+            <p className="mb-2">Loads current n8n nodes and templates for accurate workflow generation.</p>
           </div>
         )}
 
         <Button 
           onClick={seedDatabase}
           disabled={isSeeding || isCompleted}
-          className={`w-full ${isCompleted ? 'bg-green-600 hover:bg-green-700' : ''}`}
-          size="lg"
+          className={`w-full text-xs ${isCompleted ? 'bg-green-600 hover:bg-green-700' : 'bg-gray-800 hover:bg-gray-900'}`}
+          size="sm"
         >
           {isSeeding ? (
             <>
-              <Download className="w-4 h-4 mr-2 animate-pulse" />
-              Seeding Database...
+              <Download className="w-3 h-3 mr-2 animate-pulse" />
+              Seeding...
             </>
           ) : isCompleted ? (
             <>
-              <CheckCircle className="w-4 h-4 mr-2" />
-              Database Ready
+              <CheckCircle className="w-3 h-3 mr-2" />
+              Ready
             </>
           ) : (
             <>
-              <Database className="w-4 h-4 mr-2" />
+              <Database className="w-3 h-3 mr-2" />
               Seed Database
             </>
           )}
