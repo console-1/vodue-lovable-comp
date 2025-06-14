@@ -1,10 +1,10 @@
 
-// Legacy workflow generator - now using ModernWorkflowGenerator
-import { ModernWorkflowGenerator } from './modernWorkflowGenerator';
+// Enhanced workflow generator - now using AdvancedWorkflowGenerator
+import { AdvancedWorkflowGenerator } from './advancedWorkflowGenerator';
 
 export class WorkflowGenerator {
   static async generateWorkflow(description: string): Promise<any> {
-    console.log('Using modern workflow generator for:', description);
-    return ModernWorkflowGenerator.generateWorkflow(description);
+    console.log('🚀 Using advanced AI-powered workflow generator for:', description);
+    return AdvancedWorkflowGenerator.generateWorkflow(description);
   }
 }
