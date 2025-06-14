@@ -1,7 +1,12 @@
 
-import { NodeService } from '@/services/nodeService';
+// NodeService is not used directly anymore in this file if recommendNodes was its only use.
+// However, NodeIntelligenceService uses NodeService.getNodeDefinitions(), so NodeService must still be functional.
+// For this file, we only need NodeIntelligenceService for recommendations.
+import { NodeIntelligenceService } from '@/services/nodeIntelligenceService';
 import { EnhancedWorkflowValidator } from './enhancedWorkflowValidator';
 import type { Database } from '@/integrations/supabase/types';
+// NodeDefinition is returned by NodeIntelligenceService.getIntelligentRecommendations (as part of NodeRecommendation)
+// and is used by analyzeAndGenerate, so the type is still relevant.
 
 type NodeDefinition = Database['public']['Tables']['node_definitions']['Row'];
 
@@ -23,7 +28,9 @@ export class ModernWorkflowGenerator {
     console.log('Generating workflow for:', description);
     
     // Get node recommendations first
-    const recommendedNodes = await NodeService.recommendNodes(description);
+    // NodeIntelligenceService.getIntelligentRecommendations returns NodeRecommendation[]
+    // which extends NodeDefinition[]. This is compatible with analyzeAndGenerate.
+    const recommendedNodes = await NodeIntelligenceService.getIntelligentRecommendations(description);
     console.log('Recommended nodes:', recommendedNodes);
     
     // Generate workflow structure based on description and recommendations

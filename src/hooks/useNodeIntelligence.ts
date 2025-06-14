@@ -1,6 +1,8 @@
 
 import { useState, useCallback } from 'react';
+// NodeService is still needed for saveWorkflowAsTemplate
 import { NodeService, type ValidationIssue } from '@/services/nodeService';
+import { NodeIntelligenceService } from '@/services/nodeIntelligenceService';
 import { EnhancedWorkflowValidator, type EnhancedValidationResult } from '@/utils/enhancedWorkflowValidator';
 import { useToast } from '@/hooks/use-toast';
 
@@ -77,7 +79,9 @@ export const useNodeIntelligence = () => {
 
   const getNodeRecommendations = useCallback(async (intent: string, currentNodes: any[] = []) => {
     try {
-      return await NodeService.recommendNodes(intent, currentNodes);
+      // Return type of getIntelligentRecommendations is Promise<NodeRecommendation[]>
+      // which is compatible with Promise<NodeDefinition[]> as NodeRecommendation extends NodeDefinition
+      return await NodeIntelligenceService.getIntelligentRecommendations(intent, currentNodes);
     } catch (error) {
       console.error('Recommendation error:', error);
       return [];
