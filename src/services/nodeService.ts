@@ -3,7 +3,7 @@ import type { Database } from '@/integrations/supabase/types';
 
 type NodeDefinition = Database['public']['Tables']['node_definitions']['Row'];
 type NodeParameter = Database['public']['Tables']['node_parameters']['Row'];
-type Workflow = Database['public']['Tables']['workflows']['Row'];
+type WorkflowTemplate = Database['public']['Tables']['workflow_templates']['Row'];
 
 /**
  * Represents a node definition augmented with its parameters and versions.
@@ -350,53 +350,29 @@ export class NodeService {
    * Saves a workflow as a template
    */
   static async saveWorkflowAsTemplate(
-    workflowId: string,
-    templateData: {
-      name: string;
-      description: string;
-      category: string;
-      tags: string[];
-      use_case: string;
-      difficulty: 'beginner' | 'intermediate' | 'advanced';
-      is_public: boolean;
-    }
-  ): Promise<{ data: any; error: any }> {
-    try {
-      // Get the current user
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
-        return { data: null, error: new Error('User not authenticated') };
-      }
+    name: string,
+    description: string,
+    workflow: any,
+    category: string,
+    tags: string[] = [],
+    useCase?: string,
+    difficulty: 'beginner' | 'intermediate' | 'advanced' = 'beginner',
+    isPublic: boolean = false
+  ): Promise<void> {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) throw new Error('User not authenticated');
 
-      // Get the workflow
-      const { data: workflow, error: workflowError } = await supabase
-        .from('workflows')
-        .select('*')
-        .eq('id', workflowId)
-        .single();
+    const { error } = await supabase
+      .from('workflows')
+      .insert({
+        user_id: user.id,
+        name,
+        description,
+        n8n_json: workflow,
+        status: 'draft',
+        is_public: isPublic
+      });
 
-      if (workflowError || !workflow) {
-        return { data: null, error: workflowError || new Error('Workflow not found') };
-      }
-
-      // Save as a new workflow with template metadata
-      const { data, error } = await supabase
-        .from('workflows')
-        .insert({
-          name: templateData.name,
-          description: templateData.description,
-          n8n_json: workflow.n8n_json,
-          frontend_code: workflow.frontend_code || '',
-          webhook_url: workflow.webhook_url || '',
-          is_public: templateData.is_public,
-          status: 'template' as const,
-          user_id: user.id
-        });
-
-      return { data, error };
-    } catch (error) {
-      console.error('Error saving workflow as template:', error);
-      return { data: null, error };
-    }
+    if (error) throw error;
   }
 }

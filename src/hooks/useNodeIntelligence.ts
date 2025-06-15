@@ -114,10 +114,10 @@ export const useNodeIntelligence = () => {
         description,
         workflow,
         category,
-        options.tags,
+        options.tags || [],
         options.useCase,
-        options.difficulty,
-        options.isPublic
+        options.difficulty || 'beginner',
+        options.isPublic || false
       );
       
       toast({
