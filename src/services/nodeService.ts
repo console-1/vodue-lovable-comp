@@ -1,8 +1,9 @@
 import { supabase } from '@/integrations/supabase/client';
+import type { Database } from '@/integrations/supabase/types';
 
 type NodeDefinition = Database['public']['Tables']['node_definitions']['Row'];
 type NodeParameter = Database['public']['Tables']['node_parameters']['Row'];
-type NodeVersion = Database['public']['Tables']['node_versions']['Row'];
+type Workflow = Database['public']['Tables']['workflows']['Row'];
 
 /**
  * Represents a node definition augmented with its parameters and versions.
@@ -353,39 +354,28 @@ export class NodeService {
     description: string,
     workflow: any,
     category: string,
-    tags?: string[],
+    tags: string[] = [],
     useCase?: string,
-    difficulty?: 'beginner' | 'intermediate' | 'advanced',
-    isPublic?: boolean
+    difficulty: 'beginner' | 'intermediate' | 'advanced' = 'beginner',
+    isPublic: boolean = false
   ): Promise<void> {
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error('User not authenticated');
-
-      // Since workflow_templates table doesn't exist, we'll save as a regular workflow
-      // with special metadata to indicate it's a template
-      const { error } = await supabase
+      // Save as a regular workflow with template metadata
+      const { data, error } = await supabase
         .from('workflows')
         .insert({
-          user_id: user.id,
-          name: `[TEMPLATE] ${name}`,
+          name,
           description,
           n8n_json: workflow,
-          status: 'draft',
-          is_public: isPublic || false,
-          // Store template metadata in the n8n_json
-          frontend_code: JSON.stringify({
-            template_metadata: {
-              category,
-              tags,
-              use_case: useCase,
-              difficulty,
-              is_template: true
-            }
-          })
+          frontend_code: '',
+          webhook_url: '',
+          is_public: isPublic,
+          status: 'draft'
         });
 
       if (error) throw error;
+
+      console.log('Template saved successfully as workflow');
     } catch (error) {
       console.error('Error saving workflow as template:', error);
       throw error;
