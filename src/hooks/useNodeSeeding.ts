@@ -1,6 +1,6 @@
 
 import { useState } from 'react';
-import { NodeSeeder } from '@/utils/nodeSeeder';
+import { SeedingCoordinator } from '@/utils/seeding/seedingCoordinator';
 import { useToast } from '@/hooks/use-toast';
 
 export const useNodeSeeding = () => {
@@ -14,10 +14,10 @@ export const useNodeSeeding = () => {
 
     try {
       setSeedingProgress('Seeding node definitions...');
-      await NodeSeeder.seedNodeDefinitions();
+      await SeedingCoordinator.seedNodeDefinitionsOnly();
       
       setSeedingProgress('Seeding workflow templates...');
-      await NodeSeeder.seedWorkflowTemplates();
+      await SeedingCoordinator.seedWorkflowTemplatesOnly();
       
       setSeedingProgress('Seeding completed successfully!');
       

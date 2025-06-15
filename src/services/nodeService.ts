@@ -350,35 +350,53 @@ export class NodeService {
    * Saves a workflow as a template
    */
   static async saveWorkflowAsTemplate(
-    name: string,
-    description: string,
-    workflow: any,
-    category: string,
-    tags: string[] = [],
-    useCase?: string,
-    difficulty: 'beginner' | 'intermediate' | 'advanced' = 'beginner',
-    isPublic: boolean = false
-  ): Promise<void> {
+    workflowId: string,
+    templateData: {
+      name: string;
+      description: string;
+      category: string;
+      tags: string[];
+      use_case: string;
+      difficulty: 'beginner' | 'intermediate' | 'advanced';
+      is_public: boolean;
+    }
+  ): Promise<{ data: any; error: any }> {
     try {
-      // Save as a regular workflow with template metadata
+      // Get the current user
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        return { data: null, error: new Error('User not authenticated') };
+      }
+
+      // Get the workflow
+      const { data: workflow, error: workflowError } = await supabase
+        .from('workflows')
+        .select('*')
+        .eq('id', workflowId)
+        .single();
+
+      if (workflowError || !workflow) {
+        return { data: null, error: workflowError || new Error('Workflow not found') };
+      }
+
+      // Save as a new workflow with template metadata
       const { data, error } = await supabase
         .from('workflows')
         .insert({
-          name,
-          description,
-          n8n_json: workflow,
-          frontend_code: '',
-          webhook_url: '',
-          is_public: isPublic,
-          status: 'draft'
+          name: templateData.name,
+          description: templateData.description,
+          n8n_json: workflow.n8n_json,
+          frontend_code: workflow.frontend_code || '',
+          webhook_url: workflow.webhook_url || '',
+          is_public: templateData.is_public,
+          status: 'template' as const,
+          user_id: user.id
         });
 
-      if (error) throw error;
-
-      console.log('Template saved successfully as workflow');
+      return { data, error };
     } catch (error) {
       console.error('Error saving workflow as template:', error);
-      throw error;
+      return { data: null, error };
     }
   }
 }
