@@ -25,6 +25,14 @@ const getRelevanceColor = (score: number) => {
   return 'bg-blue-100 text-blue-800 border-blue-200';
 };
 
+const getCategoryColor = (category: string = '') => {
+  const categoryLower = category.toLowerCase();
+  if (categoryLower.includes('core')) return 'bg-purple-100 text-purple-800';
+  if (categoryLower.includes('trigger')) return 'bg-blue-100 text-blue-800';
+  if (categoryLower.includes('action')) return 'bg-green-100 text-green-800';
+  return 'bg-gray-100 text-gray-800';
+};
+
 export const NodeRecommendations: React.FC<NodeRecommendationsProps> = ({
   intent,
   currentNodes = [],
@@ -149,6 +157,14 @@ export const NodeRecommendations: React.FC<NodeRecommendationsProps> = ({
                         >
                           {node.relevanceScore}% match
                         </Badge>
+                        {node.category && (
+                          <Badge 
+                            variant="outline" 
+                            className={`text-xs ${getCategoryColor(node.category)}`}
+                          >
+                            {node.category}
+                          </Badge>
+                        )}
                       </div>
                       <p className="text-sm text-gray-600 line-clamp-2 mb-1">
                         {node.description}
