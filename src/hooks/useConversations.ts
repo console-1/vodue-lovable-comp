@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
@@ -19,32 +20,12 @@ export interface Conversation {
   updated_at: string;
 }
 
-/**
- * Custom React hook for managing conversations.
- * Provides functionality to fetch, create, update, and delete conversations
- * associated with the currently authenticated user.
- * It also handles loading states and displays toasts for user feedback.
- *
- * @returns {object} An object containing:
- *  - `conversations` {Conversation[]}: An array of the current user's conversations, ordered by most recently updated.
- *  - `loading` {boolean}: A boolean indicating if conversations are currently being fetched.
- *  - `createConversation` {function(title: string, mode: 'build' | 'interact'): Promise<Conversation | null>}: Function to create a new conversation.
- *  - `updateConversation` {function(id: string, updates: Partial<Conversation>): Promise<boolean>}: Function to update an existing conversation's title or mode.
- *  - `deleteConversation` {function(id: string): Promise<boolean>}: Function to delete a conversation.
- *  - `refetch` {function(): Promise<void>}: Function to manually refetch the list of conversations.
- */
 export const useConversations = () => {
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [loading, setLoading] = useState(true);
   const { user } = useAuth();
   const { toast } = useToast();
 
-  /**
-   * Fetches conversations for the current user from the database.
-   * Orders conversations by the last update time, descending.
-   * Updates the `conversations` state and handles loading and error states.
-   * @async
-   */
   const fetchConversations = useCallback(async () => {
     if (!user) {
       setConversations([]);
@@ -66,11 +47,15 @@ export const useConversations = () => {
           description: "Failed to load conversations: " + error.message,
           variant: "destructive",
         });
-        setConversations([]); // Clear conversations on error
+        setConversations([]);
         return;
       }
 
-      setConversations(data || []);
+      // Type cast the database response to match our interface
+      setConversations((data || []).map(item => ({
+        ...item,
+        mode: item.mode as 'build' | 'interact'
+      })));
     } catch (error) {
       console.error('Caught error fetching conversations:', error);
       toast({
@@ -84,13 +69,6 @@ export const useConversations = () => {
     }
   }, [user, toast]);
 
-  /**
-   * Creates a new conversation for the current user.
-   * @param {string} title - The title for the new conversation.
-   * @param {'build' | 'interact'} mode - The mode for the new conversation.
-   * @returns {Promise<Conversation | null>} A promise that resolves to the created conversation object or null if creation fails.
-   * @async
-   */
   const createConversation = async (title: string, mode: 'build' | 'interact'): Promise<Conversation | null> => {
     if (!user) return null;
 
@@ -115,13 +93,18 @@ export const useConversations = () => {
         return null;
       }
 
-      setConversations(prev => [data, ...prev]);
+      const newConversation: Conversation = {
+        ...data,
+        mode: data.mode as 'build' | 'interact'
+      };
+
+      setConversations(prev => [newConversation, ...prev]);
       toast({
         title: "Conversation Created",
-        description: `Conversation "${data.title}" has been successfully created.`,
+        description: `Conversation "${newConversation.title}" has been successfully created.`,
         variant: "default",
       });
-      return data;
+      return newConversation;
     } catch (error) {
       console.error('Caught error creating conversation:', error);
       toast({
@@ -133,15 +116,6 @@ export const useConversations = () => {
     }
   };
 
-  /**
-   * Updates an existing conversation's title or mode.
-   * Note: Only `title` and `mode` are typically updatable by the user directly through this function.
-   * Other fields like `updated_at` are handled by the database.
-   * @param {string} id - The ID of the conversation to update.
-   * @param {Partial<Pick<Conversation, 'title' | 'mode'>>} updates - An object containing the fields to update (e.g., title, mode).
-   * @returns {Promise<boolean>} A promise that resolves to true if update is successful, false otherwise.
-   * @async
-   */
   const updateConversation = async (id: string, updates: Partial<Pick<Conversation, 'title' | 'mode'>>): Promise<boolean> => {
     try {
       const { data: updatedData, error } = await supabase
@@ -161,12 +135,17 @@ export const useConversations = () => {
         return false;
       }
 
+      const updatedConversation: Conversation = {
+        ...updatedData,
+        mode: updatedData.mode as 'build' | 'interact'
+      };
+
       setConversations(prev =>
-        prev.map(conv => conv.id === id ? updatedData : conv)
+        prev.map(conv => conv.id === id ? updatedConversation : conv)
       );
       toast({
         title: "Conversation Updated",
-        description: `Conversation "${updatedData.title}" has been successfully updated.`,
+        description: `Conversation "${updatedConversation.title}" has been successfully updated.`,
         variant: "default",
       });
       return true;
@@ -181,12 +160,6 @@ export const useConversations = () => {
     }
   };
 
-  /**
-   * Deletes a conversation.
-   * @param {string} id - The ID of the conversation to delete.
-   * @returns {Promise<boolean>} A promise that resolves to true if deletion is successful, false otherwise.
-   * @async
-   */
   const deleteConversation = async (id: string): Promise<boolean> => {
     try {
       const { error } = await supabase
@@ -224,7 +197,7 @@ export const useConversations = () => {
 
   useEffect(() => {
     fetchConversations();
-  }, [user, fetchConversations]); // Added fetchConversations to dependency array
+  }, [user, fetchConversations]);
 
   return {
     conversations,

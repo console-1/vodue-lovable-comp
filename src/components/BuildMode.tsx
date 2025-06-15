@@ -1,8 +1,10 @@
+
 import React, { useState } from 'react';
 import { ChatInterface } from './ChatInterface';
 import { WorkflowPreview } from './WorkflowPreview';
 import { useToast } from '@/hooks/use-toast';
 import { EnhancedBuildMode } from '@/utils/enhancedBuildMode';
+import { EnhancedWorkflowValidator } from '@/utils/enhancedWorkflowValidator';
 import { useWorkflows } from '@/hooks/useWorkflows';
 import { useAuth } from '@/contexts/AuthContext';
 
@@ -79,7 +81,7 @@ export const BuildMode: React.FC<BuildModeProps> = ({ workflows, onWorkflowCreat
       setWorkflowInsights(result.insights);
       
       // Create sophisticated response based on results
-      let responseContent = this.createIntelligentResponse(result);
+      let responseContent = createIntelligentResponse(result);
       
       const aiResponse: Message = {
         type: 'ai',
@@ -95,7 +97,7 @@ export const BuildMode: React.FC<BuildModeProps> = ({ workflows, onWorkflowCreat
       console.error('Enhanced workflow generation error:', error);
       const errorResponse: Message = {
         type: 'ai',
-        content: `I encountered an issue while crafting your sophisticated workflow. The error was: ${error.message}. Please try rephrasing your request with more specific details about your automation needs.`,
+        content: `I encountered an issue while crafting your sophisticated workflow. The error was: ${(error as Error).message}. Please try rephrasing your request with more specific details about your automation needs.`,
         timestamp: new Date()
       };
       setMessages(prev => [...prev, errorResponse]);
@@ -110,7 +112,7 @@ export const BuildMode: React.FC<BuildModeProps> = ({ workflows, onWorkflowCreat
     let response = '✨ I\'ve crafted a sophisticated workflow using VODUE\'s enhanced intelligence system.\n\n';
     
     // Quality assessment
-    const qualityScore = validation.qualityScore || 0;
+    const qualityScore = validation?.qualityScore || 0;
     if (qualityScore >= 90) {
       response += '🏆 **Exceptional Quality** - This workflow meets enterprise standards with optimal node configuration.\n\n';
     } else if (qualityScore >= 75) {
@@ -122,7 +124,7 @@ export const BuildMode: React.FC<BuildModeProps> = ({ workflows, onWorkflowCreat
     }
     
     // Complexity insights
-    if (insights.complexity) {
+    if (insights?.complexity) {
       response += `**Complexity Score:** ${insights.complexity.toFixed(1)}/10\n`;
       if (insights.complexity < 3) {
         response += '*This is a streamlined workflow perfect for getting started.*\n';
@@ -135,8 +137,8 @@ export const BuildMode: React.FC<BuildModeProps> = ({ workflows, onWorkflowCreat
     }
     
     // Validation summary
-    const errorCount = validation.issues?.filter(i => i.type === 'error').length || 0;
-    const warningCount = validation.issues?.filter(i => i.type === 'warning').length || 0;
+    const errorCount = validation?.issues?.filter((i: any) => i.type === 'error').length || 0;
+    const warningCount = validation?.issues?.filter((i: any) => i.type === 'warning').length || 0;
     
     if (errorCount === 0 && warningCount === 0) {
       response += '✅ **Perfect Validation** - No issues detected, ready for deployment.\n\n';
@@ -147,18 +149,18 @@ export const BuildMode: React.FC<BuildModeProps> = ({ workflows, onWorkflowCreat
     }
     
     // Intelligent recommendations
-    if (insights.recommendations?.length > 0) {
+    if (insights?.recommendations?.length > 0) {
       response += '🧠 **Smart Recommendations:**\n';
-      insights.recommendations.slice(0, 3).forEach(rec => {
+      insights.recommendations.slice(0, 3).forEach((rec: string) => {
         response += `• ${rec}\n`;
       });
       response += '\n';
     }
     
     // Optimization suggestions
-    if (insights.optimizations?.length > 0) {
+    if (insights?.optimizations?.length > 0) {
       response += '⚡ **Performance Optimizations:**\n';
-      insights.optimizations.forEach(opt => {
+      insights.optimizations.forEach((opt: string) => {
         response += `• ${opt}\n`;
       });
       response += '\n';
@@ -259,7 +261,6 @@ export const BuildMode: React.FC<BuildModeProps> = ({ workflows, onWorkflowCreat
         onSendMessage={handleSendMessage}
         onExportWorkflow={handleExportWorkflow}
         onDeployWorkflow={handleDeployWorkflow}
-        isGenerating={isGenerating}
       />
 
       {currentWorkflow && (
@@ -267,7 +268,6 @@ export const BuildMode: React.FC<BuildModeProps> = ({ workflows, onWorkflowCreat
           <WorkflowPreview 
             workflow={currentWorkflow} 
             validationResults={validationResults}
-            insights={workflowInsights}
           />
         </div>
       )}

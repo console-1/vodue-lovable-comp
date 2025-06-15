@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
@@ -49,30 +50,12 @@ export interface CreateWorkflowInput {
   conversation_id?: string;
 }
 
-/**
- * Custom React hook for managing workflows.
- * Provides functionality to fetch, create, update, and delete workflows.
- * It also handles loading states and displays toasts for error messages.
- *
- * @returns {object} An object containing:
- *  - `workflows` {Workflow[]}: An array of the current user's workflows.
- *  - `loading` {boolean}: A boolean indicating if workflows are currently being fetched.
- *  - `createWorkflow` {function(workflow: CreateWorkflowInput): Promise<Workflow | null>}: Function to create a new workflow.
- *  - `updateWorkflow` {function(id: string, updates: Partial<CreateWorkflowInput>): Promise<boolean>}: Function to update an existing workflow.
- *  - `deleteWorkflow` {function(id: string): Promise<boolean>}: Function to delete a workflow.
- *  - `refetch` {function(): Promise<void>}: Function to manually refetch the list of workflows.
- */
 export const useWorkflows = () => {
   const [workflows, setWorkflows] = useState<Workflow[]>([]);
   const [loading, setLoading] = useState(true);
   const { user } = useAuth();
   const { toast } = useToast();
 
-  /**
-   * Fetches workflows for the current user from the database.
-   * Updates the `workflows` state and handles loading and error states.
-   * @async
-   */
   const fetchWorkflows = useCallback(async () => {
     if (!user) {
       setWorkflows([]);
@@ -94,11 +77,15 @@ export const useWorkflows = () => {
           description: "Failed to load workflows",
           variant: "destructive",
         });
-        setWorkflows([]); // Clear workflows on error
+        setWorkflows([]);
         return;
       }
 
-      setWorkflows(data || []);
+      // Type cast the database response to match our interface
+      setWorkflows((data || []).map(item => ({
+        ...item,
+        status: item.status as 'draft' | 'deployed' | 'active'
+      })));
     } catch (error) {
       console.error('Caught error fetching workflows:', error);
       toast({
@@ -112,12 +99,6 @@ export const useWorkflows = () => {
     }
   }, [user, toast]);
 
-  /**
-   * Creates a new workflow for the current user.
-   * @param {CreateWorkflowInput} workflowInput - The details of the workflow to create.
-   * @returns {Promise<Workflow | null>} A promise that resolves to the created workflow object or null if creation fails.
-   * @async
-   */
   const createWorkflow = async (workflowInput: CreateWorkflowInput): Promise<Workflow | null> => {
     if (!user) return null;
 
@@ -125,7 +106,7 @@ export const useWorkflows = () => {
       const { data, error } = await supabase
         .from('workflows')
         .insert({
-          ...workflowInput, // Spread all properties from input
+          ...workflowInput,
           status: workflowInput.status || 'draft',
           is_public: workflowInput.is_public || false,
           user_id: user.id,
@@ -143,13 +124,18 @@ export const useWorkflows = () => {
         return null;
       }
 
-      setWorkflows(prev => [data, ...prev]);
+      const newWorkflow: Workflow = {
+        ...data,
+        status: data.status as 'draft' | 'deployed' | 'active'
+      };
+
+      setWorkflows(prev => [newWorkflow, ...prev]);
       toast({
         title: "Workflow Created",
-        description: `Workflow "${data.name}" has been successfully created.`,
+        description: `Workflow "${newWorkflow.name}" has been successfully created.`,
         variant: "default",
       });
-      return data;
+      return newWorkflow;
     } catch (error) {
       console.error('Caught error creating workflow:', error);
       toast({
@@ -161,13 +147,6 @@ export const useWorkflows = () => {
     }
   };
 
-  /**
-   * Updates an existing workflow.
-   * @param {string} id - The ID of the workflow to update.
-   * @param {Partial<CreateWorkflowInput>} updates - An object containing the fields to update.
-   * @returns {Promise<boolean>} A promise that resolves to true if update is successful, false otherwise.
-   * @async
-   */
   const updateWorkflow = async (id: string, updates: Partial<CreateWorkflowInput>): Promise<boolean> => {
     try {
       const { data, error } = await supabase
@@ -187,12 +166,17 @@ export const useWorkflows = () => {
         return false;
       }
 
+      const updatedWorkflow: Workflow = {
+        ...data,
+        status: data.status as 'draft' | 'deployed' | 'active'
+      };
+
       setWorkflows(prev =>
-        prev.map(workflow => workflow.id === id ? data : workflow)
+        prev.map(workflow => workflow.id === id ? updatedWorkflow : workflow)
       );
       toast({
         title: "Workflow Updated",
-        description: `Workflow "${data.name}" has been successfully updated.`,
+        description: `Workflow "${updatedWorkflow.name}" has been successfully updated.`,
         variant: "default",
       });
       return true;
@@ -207,12 +191,6 @@ export const useWorkflows = () => {
     }
   };
 
-  /**
-   * Deletes a workflow.
-   * @param {string} id - The ID of the workflow to delete.
-   * @returns {Promise<boolean>} A promise that resolves to true if deletion is successful, false otherwise.
-   * @async
-   */
   const deleteWorkflow = async (id: string): Promise<boolean> => {
     try {
       const { error } = await supabase
@@ -250,7 +228,7 @@ export const useWorkflows = () => {
 
   useEffect(() => {
     fetchWorkflows();
-  }, [user, fetchWorkflows]); // Added fetchWorkflows to dependency array due to useCallback
+  }, [user, fetchWorkflows]);
 
   return {
     workflows,

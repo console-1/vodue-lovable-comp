@@ -13,10 +13,9 @@ interface NodeRecommendationsProps {
   className?: string;
 }
 
-const getNodeIcon = (category: string, nodeType: string) => {
+const getNodeIcon = (nodeType: string) => {
   if (nodeType.includes('webhook')) return <Webhook className="w-4 h-4" />;
   if (nodeType.includes('code')) return <Code className="w-4 h-4" />;
-  if (category === 'Core Nodes') return <Settings className="w-4 h-4" />;
   return <Zap className="w-4 h-4" />;
 };
 
@@ -137,12 +136,12 @@ export const NodeRecommendations: React.FC<NodeRecommendationsProps> = ({
                 >
                   <div className="flex items-center gap-3 flex-1">
                     <div className="flex items-center justify-center w-8 h-8 bg-blue-100 rounded-md">
-                      {getNodeIcon(node.category || '', node.node_type)}
+                      {getNodeIcon(node.nodeType)}
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-1">
                         <h4 className="font-medium text-gray-900 truncate">
-                          {node.display_name}
+                          {node.displayName}
                         </h4>
                         <Badge 
                           variant="outline" 
@@ -150,11 +149,6 @@ export const NodeRecommendations: React.FC<NodeRecommendationsProps> = ({
                         >
                           {node.relevanceScore}% match
                         </Badge>
-                        {node.deprecated && (
-                          <Badge variant="destructive" className="text-xs">
-                            Deprecated
-                          </Badge>
-                        )}
                       </div>
                       <p className="text-sm text-gray-600 line-clamp-2 mb-1">
                         {node.description}
@@ -162,18 +156,12 @@ export const NodeRecommendations: React.FC<NodeRecommendationsProps> = ({
                       <p className="text-xs text-blue-600 italic">
                         {node.reasoning}
                       </p>
-                      {node.category && (
-                        <Badge variant="secondary" className="text-xs mt-1">
-                          {node.category}
-                        </Badge>
-                      )}
                     </div>
                   </div>
                   <Button
                     size="sm"
-                    onClick={() => onNodeSelect(node.node_type)}
+                    onClick={() => onNodeSelect(node.nodeType)}
                     className="shrink-0 ml-2"
-                    disabled={node.deprecated}
                   >
                     <Plus className="w-4 h-4 mr-1" />
                     Add
