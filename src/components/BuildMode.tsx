@@ -5,7 +5,6 @@ import { WorkflowPreview } from './WorkflowPreview';
 import { useToast } from '@/hooks/use-toast';
 import { useWorkflowChat } from '@/hooks/useWorkflowChat';
 import { WorkflowOperationsService } from '@/services/workflowOperationsService';
-import { useWorkflows } from '@/hooks/useWorkflows';
 import { useAuth } from '@/contexts/AuthContext';
 import type { Workflow } from '@/types/workflowTypes';
 
@@ -17,7 +16,6 @@ interface BuildModeProps {
 export const BuildMode: React.FC<BuildModeProps> = ({ workflows, onWorkflowCreate }) => {
   const { toast } = useToast();
   const { user } = useAuth();
-  const { createWorkflow } = useWorkflows();
 
   const {
     messages,
@@ -26,8 +24,9 @@ export const BuildMode: React.FC<BuildModeProps> = ({ workflows, onWorkflowCreat
     currentWorkflow,
     validationResults,
     isGenerating,
+    messagesLoading,
     handleSendMessage
-  } = useWorkflowChat();
+  } = useWorkflowChat('build');
 
   const onSendMessage = () => {
     handleSendMessage(input);
@@ -78,6 +77,17 @@ export const BuildMode: React.FC<BuildModeProps> = ({ workflows, onWorkflowCreat
     );
   };
 
+  if (messagesLoading) {
+    return (
+      <div className="flex-1 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-stone-600 mx-auto mb-4"></div>
+          <p className="text-stone-600">Loading conversation...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="flex-1 flex">
       <ChatInterface
@@ -88,6 +98,7 @@ export const BuildMode: React.FC<BuildModeProps> = ({ workflows, onWorkflowCreat
         onSendMessage={onSendMessage}
         onExportWorkflow={handleExportWorkflow}
         onDeployWorkflow={handleDeployWorkflow}
+        isGenerating={isGenerating}
       />
 
       {currentWorkflow && (
