@@ -1,6 +1,4 @@
-
 import { supabase } from '@/integrations/supabase/client';
-import type { Database } from '@/integrations/supabase/types';
 
 type NodeDefinition = Database['public']['Tables']['node_definitions']['Row'];
 type NodeParameter = Database['public']['Tables']['node_parameters']['Row'];
@@ -344,6 +342,53 @@ export class NodeService {
         const nodeParams = parameters.filter(param => param.node_version_id === definition.id);
         this.nodeDefinitionsCache.set(definition.name, { ...definition, parameters: nodeParams });
       });
+    }
+  }
+
+  /**
+   * Saves a workflow as a template
+   */
+  static async saveWorkflowAsTemplate(
+    name: string,
+    description: string,
+    workflow: any,
+    category: string,
+    tags?: string[],
+    useCase?: string,
+    difficulty?: 'beginner' | 'intermediate' | 'advanced',
+    isPublic?: boolean
+  ): Promise<void> {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('User not authenticated');
+
+      // Since workflow_templates table doesn't exist, we'll save as a regular workflow
+      // with special metadata to indicate it's a template
+      const { error } = await supabase
+        .from('workflows')
+        .insert({
+          user_id: user.id,
+          name: `[TEMPLATE] ${name}`,
+          description,
+          n8n_json: workflow,
+          status: 'draft',
+          is_public: isPublic || false,
+          // Store template metadata in the n8n_json
+          frontend_code: JSON.stringify({
+            template_metadata: {
+              category,
+              tags,
+              use_case: useCase,
+              difficulty,
+              is_template: true
+            }
+          })
+        });
+
+      if (error) throw error;
+    } catch (error) {
+      console.error('Error saving workflow as template:', error);
+      throw error;
     }
   }
 }

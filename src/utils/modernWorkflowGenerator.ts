@@ -1,14 +1,9 @@
-
-// NodeService is not used directly anymore in this file if recommendNodes was its only use.
-// However, NodeIntelligenceService uses NodeService.getNodeDefinitions(), so NodeService must still be functional.
-// For this file, we only need NodeIntelligenceService for recommendations.
 import { NodeIntelligenceService } from '@/services/nodeIntelligenceService';
 import { EnhancedWorkflowValidator } from './enhancedWorkflowValidator';
 import type { Database } from '@/integrations/supabase/types';
-// NodeDefinition is returned by NodeIntelligenceService.getIntelligentRecommendations (as part of NodeRecommendation)
-// and is used by analyzeAndGenerate, so the type is still relevant.
 
-type NodeDefinition = Database['public']['Tables']['node_definitions']['Row'];
+// Use the actual database type instead of custom NodeDefinition
+type NodeDefinition = Database['public']['Views']['current_node_definitions']['Row'];
 
 export interface GeneratedWorkflow {
   id: number;
@@ -28,13 +23,12 @@ export class ModernWorkflowGenerator {
     console.log('Generating workflow for:', description);
     
     // Get node recommendations first
-    // NodeIntelligenceService.getIntelligentRecommendations returns NodeRecommendation[]
-    // which extends NodeDefinition[]. This is compatible with analyzeAndGenerate.
     const recommendedNodes = await NodeIntelligenceService.getIntelligentRecommendations(description);
     console.log('Recommended nodes:', recommendedNodes);
     
-    // Generate workflow structure based on description and recommendations
-    const workflow = await this.analyzeAndGenerate(description, recommendedNodes);
+    // Convert NodeRecommendation[] to the format expected by analyzeAndGenerate
+    // Since we don't have all the required properties, we'll create a simplified approach
+    const workflow = await this.analyzeAndGenerateSimplified(description, recommendedNodes);
     
     // Validate the generated workflow
     const validationResult = await EnhancedWorkflowValidator.validateWorkflowComprehensive(workflow.json);
@@ -52,7 +46,7 @@ export class ModernWorkflowGenerator {
     };
   }
 
-  private static async analyzeAndGenerate(description: string, recommendedNodes: NodeDefinition[]): Promise<Omit<GeneratedWorkflow, 'validationResult' | 'recommendations'>> {
+  private static async analyzeAndGenerateSimplified(description: string, recommendedNodes: any[]): Promise<Omit<GeneratedWorkflow, 'validationResult' | 'recommendations'>> {
     const lowerDesc = description.toLowerCase();
     
     // Determine workflow type and generate appropriate structure

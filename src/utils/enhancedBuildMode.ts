@@ -1,4 +1,3 @@
-
 import { DatabaseWorkflowGenerator } from './databaseWorkflowGenerator';
 import { EnhancedWorkflowValidator } from './enhancedWorkflowValidator';
 
@@ -50,7 +49,7 @@ export class EnhancedBuildMode {
         validation: {
           ...validation,
           qualityScore: this.calculateQualityScore(qualityCheck, validation),
-          suggestions: [...qualityCheck.optimizations, ...validation.suggestions || []]
+          suggestions: [...qualityCheck.optimizations, ...(validation.recommendations || [])]
         },
         insights
       };
